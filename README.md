@@ -17,7 +17,7 @@ A lightweight utility to simplify and validate argument parsing in class constru
 git clone https://github.com/q3st1on/ArgParser.git
 cd ArgParser
 python -m build
-pip install .\dist\argparser-0.0.1-py3-none-any.whl
+pip install .\dist\argparser-1.0.0-py3-none-any.whl
 ```
 If you get the error `ModuleNotFoundError: No module named 'build'` when trying to install, you first need to download build by running `pip install build`
 

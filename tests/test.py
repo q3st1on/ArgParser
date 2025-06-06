@@ -15,11 +15,12 @@ class OtherClass:
 class TestClass:
     def __init__(self, *args, **kwargs):
         argParser = ArgParser()
-        argParser.addPositionalArg("pos1", dtype = str, default = "value")
+        argParser.addPositionalArg("pos1", dtype = str, default = "value", possibleValues = ("value", "test"))
         argParser.addKeywordArg("kw1", dtype = ParentClass)
         argParser.addKeywordArg("kw2", subClass = ParentClass)
         argParser.addKeywordArg("kw3", min = 1, max = 1.1, default = 1.05)
         argParser.addKeywordArg("kw4", dtype = str, minLength = 2, maxLength = 4, default = "str")
+        argParser.addKeywordArg("op1", optional = True)
         argParser.parseArgs(*args, **kwargs)
         
         self.pos1 = argParser.pos1
@@ -27,10 +28,39 @@ class TestClass:
         self.kw2 = argParser.kw2
         self.kw3 = argParser.kw3
         self.kw4 = argParser.kw4
+        self.op1 = argParser.op1
 
     def getParsedVals(self):
-        return (self.pos1, self.kw1, self.kw2, self.kw3, self.kw4)    
+        return (self.pos1, self.kw1, self.kw2, self.kw3, self.kw4, self.op1)
+  
+
+def testOptional():
+    parentInstance = ParentClass()
+    childInstance = ChildClass()
+    try:
+        test = TestClass(
+            kw1 = parentInstance,
+            kw2 = childInstance,
+            kw3 = 1.065,
+            )
+    except:
+        raise Exception("Optional args not being handled correctly")
+    test = TestClass(
+        kw1 = parentInstance,
+        kw2 = childInstance,
+        kw3 = 1.065,
+        op1 = "value"
+        )
     
+    results = test.getParsedVals()
+
+    assert results[0] == "value",           "pos1 parsed incorrectly"
+    assert results[1] == parentInstance,    "kw1 parsed incorrectly"
+    assert results[2] == childInstance,     "kw2 parsed incorrectly"
+    assert results[3] == 1.065,             "kw3 parsed incorrectly"
+    assert results[4] == "str",             "kw4 parsed incorrectly"
+    assert results[5] == "value",           "op1 parsed incorrectly"
+
 def testDefaults():
     parentInstance = ParentClass()
     childInstance = ChildClass()
@@ -47,6 +77,7 @@ def testDefaults():
     assert results[2] == childInstance,     "kw2 parsed incorrectly"
     assert results[3] == 1.065,             "kw3 parsed incorrectly"
     assert results[4] == "str",             "kw4 parsed incorrectly"
+    assert results[5] == None,              "op1 parsed incorrectly"
 
 def testMin():
     parentInstance = ParentClass()
@@ -157,6 +188,7 @@ def testPositionalArgCountEnforcement():
             childInstance,
             1.065,
             "test",
+            "value",
             "Extra Arg"
             )
         raise Exception("Unexpected positional args not being handled correctly")
@@ -179,7 +211,23 @@ def testKeywordArgCountEnforcement():
     except TypeError:
         pass
 
+def testPossibleValues():
+    parentInstance = ParentClass()
+    childInstance = ChildClass()
+    try:
+        test = TestClass(
+            "invalidValue",
+            kw1 = parentInstance,
+            kw2 = childInstance,
+            kw3 = 1.065,
+            kw4 = "test",
+            )
+        raise Exception("Invalid value when possibleValues is set not being handled correctly")
+    except ValueError:
+        pass
+
 if __name__=="__main__":
+    testOptional()
     testDefaults()
     testMin()
     testMax()
@@ -190,4 +238,5 @@ if __name__=="__main__":
     testKwargOverflow()
     testPositionalArgCountEnforcement()
     testKeywordArgCountEnforcement()
+    testPossibleValues()
     print("All tests passed.")
