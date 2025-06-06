@@ -188,8 +188,11 @@ class ArgParser:
         # Test and set default if present
         default = kwargs.get("default", _sentinel)
         if default is not _sentinel:
-            constraint.validate("default", default)
-            constraint.default = default
+            if default is None:
+                constraint.default = default
+            else:
+                constraint.validate("default", default)
+                constraint.default = default
         
         return constraint
 
