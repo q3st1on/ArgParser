@@ -18,7 +18,8 @@ class ArgConstraint:
         max=_sentinel,
         minLength=_sentinel,
         maxLength=_sentinel,
-        default=_sentinel
+        default=_sentinel,
+        optional=False
     ):
         # Flags indicating whether each constraint was specified
         self.hasDtype = dtype is not _sentinel
@@ -41,6 +42,8 @@ class ArgConstraint:
 
         self.hasDefault = lambda: default is not _sentinel
         self.default = default if self.hasDefault else None
+
+        self.optional = optional
     
     def validate(self, name: str, value: object) -> None:
         """
@@ -88,6 +91,7 @@ class ArgConstraint:
             parts.append(f"maxLength={self.maxLength!r}")
         if self.default is not None:
             parts.append(f"default={self.default!r}")
+        parts.append(f"optional={self.optional!r}")
         return f"ArgConstraint({', '.join(parts)})"
 
 
@@ -107,6 +111,7 @@ class ArgConstraint:
             parts.append(f"maxLength={self.maxLength}")
         if self.default is not None:
             parts.append(f"default={self.default!r}")
+        parts.append(f"optional={self.optional!r}")
         return f"ArgConstraint({', '.join(parts)})"
 
 class ArgParser:
@@ -139,7 +144,7 @@ class ArgParser:
         """
         # Check for unsupported constraint keys
         for k in kwargs:
-            if k not in ("dtype", "subClass", "min", "max", "minLength", "maxLength", "default"):
+            if k not in ("dtype", "subClass", "min", "max", "minLength", "maxLength", "default", "optional"):
                 raise NotImplementedError(f"{k} condition not implemented")
 
         dtype = kwargs.get("dtype", _sentinel)
@@ -175,6 +180,8 @@ class ArgParser:
         if maxLength is not _sentinel and not isinstance(maxLength, int):
             raise TypeError(f"maxLength for {name} must be of type 'int'")
 
+        optional = kwargs.get("optional", False)
+
         # Construct and return ArgConstraint object with all constraints and no default
         constraint =  ArgConstraint(
             dtype=dtype,
@@ -183,6 +190,7 @@ class ArgParser:
             max=max_val,
             minLength=minLength,
             maxLength=maxLength,
+            optional=optional
         )
         
         # Test and set default if present
@@ -248,7 +256,7 @@ class ArgParser:
                 del kwargs[name]
             elif constraint.hasDefault:
                 setattr(self, name, constraint.default)
-            else:
+            elif not constraint.optional:
                 raise TypeError(f"ArgParser: missing required keyword argument: '{name}'")
             # Remove arg onced parsed
             del self._kwargs[name]
