@@ -256,7 +256,9 @@ class ArgParser:
                 del kwargs[name]
             elif constraint.hasDefault:
                 setattr(self, name, constraint.default)
-            elif not constraint.optional:
+            elif constraint.optional:
+                setattr(self, name, None)
+            else:
                 raise TypeError(f"ArgParser: missing required keyword argument: '{name}'")
             # Remove arg onced parsed
             del self._kwargs[name]
