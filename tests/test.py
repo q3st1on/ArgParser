@@ -1,16 +1,55 @@
 from ArgParser import ArgParser
+from logging.handlers import RotatingFileHandler
+import logging
+import sys
+import os
+
+# LOGGING VARS
+LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+LOG_LEVEL = logging.DEBUG
+
+#Logger for module
+logger = logging.getLogger()
+logger.setLevel(LOG_LEVEL)
+
+# Console handler with colorized formatter
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)
+console_formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+console_handler.setFormatter(console_formatter)
+logger.addHandler(console_handler)
+
+# File handler with plain formatter (no colors)
+file_handler = RotatingFileHandler(f"{os.path.dirname(os.path.realpath(__file__))}{os.sep}test.log", encoding="utf-8", maxBytes=5*1024*1024, backupCount=3)
+file_handler.setLevel(logging.DEBUG)
+file_formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
 
 class ParentClass:
     def __init__(self):
         pass
+    def __str__(self):
+        return "ParentClass"
+    def __repr__(self):
+        return self.__str__()
 
 class ChildClass(ParentClass):
     def __init__(self):
         pass
+    def __str__(self):
+        return "ChildClass"
+    def __repr__(self):
+        return self.__str__()
 
 class OtherClass:
     def __init__(self):
         pass
+    def __str__(self):
+        return "OtherClass"
+    def __repr__(self):
+        return self.__str__()
 
 class TestClass:
     def __init__(self, *args, **kwargs):
@@ -32,6 +71,11 @@ class TestClass:
 
     def getParsedVals(self):
         return (self.pos1, self.kw1, self.kw2, self.kw3, self.kw4, self.op1)
+    
+    def __str__(self):
+        return "TestClass"
+    def __repr__(self):
+        return self.__str__()
   
 
 def testOptional():
